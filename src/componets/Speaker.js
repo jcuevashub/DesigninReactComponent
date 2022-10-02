@@ -1,3 +1,6 @@
+import { useContext, useState } from "react";
+import { SpeakerFilterContext } from "../contexts/SpeakerFilterContext";
+
 const Session = ({ title, room }) => {
   return (
     <span className="session w-100">
@@ -7,9 +10,21 @@ const Session = ({ title, room }) => {
 };
 
 const Sessions = ({ sessions }) => {
+  const { eventYear } = useContext(SpeakerFilterContext);
+
   return (
     <div className="sessionBox card h-250">
-      <Session {...sessions[0]} />
+      {sessions
+        .filter((session) => {
+          return session.eventYear === eventYear;
+        })
+        .map((session) => {
+          return (
+            <div className="session w-100" key={session.id}>
+              <Session {...session} />
+            </div>
+          );
+        })}
     </div>
   );
 };
@@ -28,15 +43,31 @@ const SpeakerImage = ({ id, first, last }) => {
 };
 
 const SpeakerFavorite = ({ favorite, onFavoriteToggle }) => {
+  const [inTransition, setIntrasition] = useState(false);
+
+  const doneCallback = () => {
+    setIntrasition(false);
+    console.log(
+      `In SpeakerFavorite:doneCallback ${new Date().getMilliseconds}`
+    );
+  };
   return (
     <div className="action padB1">
-      <span onClick={onFavoriteToggle}>
+      <span
+        onClick={() => {
+          setIntrasition(true);
+          return onFavoriteToggle(doneCallback);
+        }}
+      >
         <i
           className={
             favorite === true ? "fa fa-star orange" : "fa fa-star-o orange"
           }
         />{" "}
         Favorite{" "}
+        {inTransition ? (
+          <span className="fas fa-circle-notch fa-spin"></span>
+        ) : null}
       </span>
     </div>
   );
@@ -79,8 +110,9 @@ const SpeakerDemographics = ({
   );
 };
 
-const Speaker = ({ speaker, showSessions, onFavoriteToggle }) => {
+const Speaker = ({ speaker, onFavoriteToggle }) => {
   const { id, first, last, sessions } = speaker;
+  const { showSessions } = useContext(SpeakerFilterContext);
   return (
     <div className="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-sm-12 col-sx-12">
       <div className="card card-height p-4 mt-4">

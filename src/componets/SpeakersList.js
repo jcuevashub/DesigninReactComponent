@@ -1,38 +1,59 @@
 import Speaker from "./Speaker";
+import useRequestDelay, { REQUEST_STATUS } from "../hooks/useRequestDelay";
 import { data } from "../../SpeakerData";
-import { useState } from "react";
+import { SpeakerFilterContext } from "../contexts/SpeakerFilterContext";
+import { useContext } from "react";
 
-const SpeakersList = ({ showSessions }) => {
-  const [speakersData, setSpeakersData] = useState(data);
+const SpeakersList = () => {
+  const {
+    data: speakersData,
+    requestStatus,
+    error,
+    updateRecord,
+  } = useRequestDelay(2000, data);
 
-  const onFavoriteToggle = (id) => {
-    const speakersRecPrevious = speakersData.find((rec) => rec.id === id);
-    const speakerRecUpdated = {
-      ...speakersRecPrevious,
-      favorite: !speakersRecPrevious.favorite,
-    };
+  const { searchQuery, eventYear } = useContext(SpeakerFilterContext);
 
-    const speakersDataNew = speakersData.map((rec) =>
-      rec.id === id ? speakerRecUpdated : rec
-    );
+  // if (requestStatus === REQUEST_STATUS.FAILURE) {
+  //   return (
+  //     <div className="text-danger">
+  //       ERROR: <b>loading Speaker Data Failed {error}</b>
+  //     </div>
+  //   );
+  // }
 
-    setSpeakersData(speakersDataNew);
-  };
+  // if (requestStatus === REQUEST_STATUS.LOADING) return <div>Loading...</div>;
+  console.log(speakersData);
+  console.log(eventYear);
   return (
     <div className="container speaker-list">
       <div className="row">
-        {speakersData.map((speaker) => {
-          return (
-            <Speaker
-              key={speaker.id}
-              speaker={speaker}
-              showSessions={showSessions}
-              onFavoriteToggle={() => {
-                onFavoriteToggle(speaker.id);
-              }}
-            />
-          );
-        })}
+        {speakersData
+          .filter((speaker) => {
+            return (
+              speaker.first.toLowerCase().includes(searchQuery) ||
+              speaker.last.toLowerCase().includes(searchQuery)
+            );
+          })
+          .filter((speaker) => {
+            return speaker.sessions.find((session) => {
+              return session.eventYear === eventYear;
+            });
+          })
+          .map((speaker) => {
+            return (
+              <Speaker
+                key={speaker.id}
+                speaker={speaker}
+                onFavoriteToggle={(doneCallback) => {
+                  updateRecord(
+                    { ...speaker, favorite: !speaker.favorite },
+                    doneCallback
+                  );
+                }}
+              />
+            );
+          })}
       </div>
     </div>
   );
