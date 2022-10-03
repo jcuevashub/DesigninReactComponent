@@ -11,8 +11,7 @@ const Layout = ({ startingTheme, children }) => {
 };
 
 const LayoutNoThemeProvider = ({ children }) => {
-  const [theme] = useContext(ThemeContext);
-
+  const { theme } = useContext(ThemeContext);
   return (
     <div
       className={

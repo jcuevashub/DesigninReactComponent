@@ -1,8 +1,8 @@
 import Speaker from "./Speaker";
-import useRequestDelay, { REQUEST_STATUS } from "../hooks/useRequestDelay";
-import { data } from "../../SpeakerData";
+import useRequestRest, { REQUEST_STATUS } from "../hooks/useRequestRest";
 import { SpeakerFilterContext } from "../contexts/SpeakerFilterContext";
 import { useContext } from "react";
+import SpeakerAdd from "./SpeakerAdd";
 
 const SpeakersList = () => {
   const {
@@ -10,7 +10,9 @@ const SpeakersList = () => {
     requestStatus,
     error,
     updateRecord,
-  } = useRequestDelay(2000, data);
+    insertRecord,
+    deleteRecord,
+  } = useRequestRest();
 
   const { searchQuery, eventYear } = useContext(SpeakerFilterContext);
 
@@ -23,10 +25,10 @@ const SpeakersList = () => {
   // }
 
   // if (requestStatus === REQUEST_STATUS.LOADING) return <div>Loading...</div>;
-  console.log(speakersData);
-  console.log(eventYear);
+
   return (
     <div className="container speaker-list">
+      <SpeakerAdd eventYear={eventYear} insertRecord={insertRecord} />
       <div className="row">
         {speakersData
           .filter((speaker) => {
@@ -45,12 +47,9 @@ const SpeakersList = () => {
               <Speaker
                 key={speaker.id}
                 speaker={speaker}
-                onFavoriteToggle={(doneCallback) => {
-                  updateRecord(
-                    { ...speaker, favorite: !speaker.favorite },
-                    doneCallback
-                  );
-                }}
+                updateRecord={updateRecord}
+                insertRecord={insertRecord}
+                deleteRecord={deleteRecord}
               />
             );
           })}

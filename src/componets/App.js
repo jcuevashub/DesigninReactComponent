@@ -4,7 +4,7 @@ import Layout from "./Layout";
 
 const App = () => {
   return (
-    <Layout startingThem="light">
+    <Layout startingTheme="light">
       <div>
         <Header />
         <Speakers />
